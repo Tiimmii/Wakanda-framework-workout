@@ -18,4 +18,8 @@ public class Permission {
     private boolean write;
     private boolean delete;
     private boolean update;
+
+    @OneToOne(mappedBy = "permission")
+    private User user;
 }
+

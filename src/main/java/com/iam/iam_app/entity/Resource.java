@@ -24,7 +24,7 @@ public class Resource extends BaseEntity {
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user", nullable = false, referencedColumnName = "email")
     @NotNull(message = "Owner is required")
     private User owner;
 

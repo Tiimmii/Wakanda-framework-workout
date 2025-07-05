@@ -31,8 +31,16 @@ public class User extends BaseEntity {
     private boolean isAdmin;
 
     @ManyToOne
-    @JoinColumn(name = "user_role")
+    @JoinColumn(name = "role_id", nullable = false)
     private Role userRole;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "permission_id", referencedColumnName = "id")
+    private Permission permission;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "jwt_token_id", referencedColumnName = "id")
+    private JwtToken jwtToken;
 
     public User() {
         super();

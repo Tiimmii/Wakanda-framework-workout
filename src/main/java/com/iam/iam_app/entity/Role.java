@@ -1,4 +1,7 @@
 package com.iam.iam_app.entity;
+
+import java.util.List;
+
 import com.iam.iam_app.enums.RoleType;
 
 import jakarta.persistence.*;
@@ -17,12 +20,12 @@ public class Role {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, name = "role")
     @NotNull(message = "Role type is required")
     private RoleType role;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "role_permission", referencedColumnName = "id", nullable = false)
-    @NotNull(message = "Permissions must be assigned to role")
-    private Permission rolePermission;
+    // ✅ One role can be shared by many users
+    @OneToMany(mappedBy = "userRole")
+    private List<User> users;
 }
+
