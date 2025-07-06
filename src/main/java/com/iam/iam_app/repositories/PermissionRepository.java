@@ -1,9 +1,11 @@
 package com.iam.iam_app.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import org.wakanda.framework.repository.BaseRepository;
 
 import com.iam.iam_app.entity.Permission;
 
-public interface PermissionRepository extends JpaRepository<Permission, Long> {
+@Repository
+public interface PermissionRepository extends BaseRepository<Permission, Integer> {
     
 }

@@ -2,10 +2,12 @@ package com.iam.iam_app.repositories;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import org.wakanda.framework.repository.BaseRepository;
 
 import com.iam.iam_app.entity.Role;
 
-public interface RoleRepository extends JpaRepository<Role, Long> {
+@Repository
+public interface RoleRepository extends BaseRepository<Role, Integer> {
     Optional<Role> findByRole(String role);
 }

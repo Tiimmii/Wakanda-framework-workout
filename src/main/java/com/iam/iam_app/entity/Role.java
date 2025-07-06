@@ -4,8 +4,11 @@ import java.util.List;
 
 import com.iam.iam_app.enums.RoleType;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
+import org.wakanda.framework.entity.BaseEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,11 +16,7 @@ import lombok.Setter;
 @Table(name = "roles")
 @Getter
 @Setter
-public class Role {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Role extends BaseEntity<Integer>{
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true, name = "role")

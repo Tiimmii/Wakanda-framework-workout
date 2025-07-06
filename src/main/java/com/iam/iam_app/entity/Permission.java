@@ -1,6 +1,9 @@
 package com.iam.iam_app.entity;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
+
+import org.wakanda.framework.entity.BaseEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,11 +11,7 @@ import lombok.Setter;
 @Table(name = "permissions")
 @Getter
 @Setter
-public class Permission {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Permission extends BaseEntity<Integer>{
 
     private boolean read;
     private boolean write;

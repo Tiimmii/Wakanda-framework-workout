@@ -18,104 +18,105 @@ import com.iam.iam_app.repositories.UserRepository;
 
 @Service
 public class AuthService {
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
+        @Autowired
+        private JwtService jwtService;
 
-    @Autowired
-    private RoleRepository roleRepository;
+        @Autowired
+        private RoleRepository roleRepository;
 
-    @Autowired
-    private JWTRepository jwtRepository;
+        @Autowired
+        private JWTRepository jwtRepository;
 
-    @Autowired
-    private PermissionRepository permissionRepository;
+        @Autowired
+        private PermissionRepository permissionRepository;
 
-    public AuthResponse register(CreateUserRequest request) {
-        Role customerRole = roleRepository.findByRole("CUSTOMER")
-                .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
+        public AuthResponse register(CreateUserRequest request) {
+                Role customerRole = roleRepository.findByRole("CUSTOMER")
+                                .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
 
-        Permission permission = new Permission();
-        permission.setRead(true);
-        permission.setUpdate(false);
-        permission.setDelete(false);
-        permission.setWrite(false);
-        permissionRepository.save(permission);
+                Permission permission = new Permission();
+                permission.setRead(true);
+                permission.setUpdate(false);
+                permission.setDelete(false);
+                permission.setWrite(false);
+                permissionRepository.save(permission);
 
-        User user = new User();
+                User user = new User();
 
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()).toString());
-        user.setAdmin(false); // or based on role
-        user.setUserRole(customerRole);
-        user.setPermission(permission);
+                user.setUsername(request.getUsername());
+                user.setEmail(request.getEmail());
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()).toString());
+                user.setAdmin(false); // or based on role
+                user.setUserRole(customerRole);
+                user.setPermission(permission);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
+                String accessToken = jwtService.generateAccessToken(user);
+                String refreshToken = jwtService.generateRefreshToken(user);
 
-        JwtToken jwtToken = JwtToken.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .user(user)
-                .build();
-        jwtRepository.save(jwtToken);
+                JwtToken jwtToken = JwtToken.builder()
+                                .accessToken(accessToken)
+                                .refreshToken(refreshToken)
+                                .user(user)
+                                .build();
+                jwtRepository.save(jwtToken);
 
-        user.setJwtToken(jwtToken);
-        userRepository.save(user);
+                user.setJwtToken(jwtToken);
+                userRepository.save(user);
 
-        return new AuthResponse(
-                user.getUsername(),
-                user.getEmail(),
-                user.getUserRole().getRole().name(),
-                user.getPermission().isRead(),
-                user.getPermission().isWrite(),
-                user.getPermission().isUpdate(),
-                user.getPermission().isDelete(),
-                accessToken,
-                refreshToken);
-    }
-
-    public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmailOrUsername(request.getEmailOrUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+                return new AuthResponse(
+                                user.getUsername(),
+                                user.getEmail(),
+                                user.getUserRole().getRole().name(),
+                                user.getPermission().isRead(),
+                                user.getPermission().isWrite(),
+                                user.getPermission().isUpdate(),
+                                user.getPermission().isDelete(),
+                                accessToken,
+                                refreshToken);
         }
 
-        jwtRepository.deleteByUser(user);
+        public AuthResponse login(LoginRequest request) {
+                User user = userRepository
+                                .findByEmailOrUsername(request.getEmailOrUsername(), request.getEmailOrUsername())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
+                if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+                        throw new RuntimeException("Invalid credentials");
+                }
 
-        JwtToken jwtToken = JwtToken.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .user(user)
-                .build();
+                jwtRepository.deleteByUser(user);
 
-        jwtRepository.save(jwtToken);
+                String accessToken = jwtService.generateAccessToken(user);
+                String refreshToken = jwtService.generateRefreshToken(user);
 
-        user.setJwtToken(jwtToken);
-        userRepository.save(user);
+                JwtToken jwtToken = JwtToken.builder()
+                                .accessToken(accessToken)
+                                .refreshToken(refreshToken)
+                                .user(user)
+                                .build();
 
-        return new AuthResponse(
-                user.getUsername(),
-                user.getEmail(),
-                user.getUserRole().getRole().name(),
-                user.getPermission().isRead(),
-                user.getPermission().isWrite(),
-                user.getPermission().isUpdate(),
-                user.getPermission().isDelete(),
-                accessToken,
-                refreshToken);
+                jwtRepository.save(jwtToken);
 
-    }
+                user.setJwtToken(jwtToken);
+                userRepository.save(user);
+
+                return new AuthResponse(
+                                user.getUsername(),
+                                user.getEmail(),
+                                user.getUserRole().getRole().name(),
+                                user.getPermission().isRead(),
+                                user.getPermission().isWrite(),
+                                user.getPermission().isUpdate(),
+                                user.getPermission().isDelete(),
+                                accessToken,
+                                refreshToken);
+
+        }
 
 }
