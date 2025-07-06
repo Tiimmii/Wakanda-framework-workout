@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.iam.iam_app.dto.AuthResponse;
 import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
 import com.iam.iam_app.entity.JwtToken;
@@ -35,7 +36,7 @@ public class AuthService {
     @Autowired
     private PermissionRepository permissionRepository;
 
-    public void register(CreateUserRequest request) {
+    public AuthResponse register(CreateUserRequest request) {
         Role customerRole = roleRepository.findByRole("CUSTOMER")
                 .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
 
@@ -67,9 +68,20 @@ public class AuthService {
 
         user.setJwtToken(jwtToken);
         userRepository.save(user);
+
+        return new AuthResponse(
+                user.getUsername(),
+                user.getEmail(),
+                user.getUserRole().getRole().name(),
+                user.getPermission().isRead(),
+                user.getPermission().isWrite(),
+                user.getPermission().isUpdate(),
+                user.getPermission().isDelete(),
+                accessToken,
+                refreshToken);
     }
 
-    public void login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmailOrUsername(request.getEmailOrUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -92,6 +104,17 @@ public class AuthService {
 
         user.setJwtToken(jwtToken);
         userRepository.save(user);
+
+        return new AuthResponse(
+                user.getUsername(),
+                user.getEmail(),
+                user.getUserRole().getRole().name(),
+                user.getPermission().isRead(),
+                user.getPermission().isWrite(),
+                user.getPermission().isUpdate(),
+                user.getPermission().isDelete(),
+                accessToken,
+                refreshToken);
 
     }
 
