@@ -12,13 +12,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // .csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity (enable in production)
-            // .authorizeHttpRequests(auth -> auth
-            //     .requestMatchers("/auth/login", "/auth/register", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // allow login, register, swagger
-            //     .anyRequest().authenticated()
-            // )
-            .formLogin(form -> form.disable()) // ❌ Disable Spring Boot's default login form
-            .httpBasic(basic -> basic.disable()); // Optional: disable basic auth if not needed
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers(
+                        "/auth/register",
+                        "/auth/login",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html")
+                .permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin(form -> form.disable()) // ❌ Disable Spring Boot's default login form
+                .httpBasic(basic -> basic.disable()); // Optional: disable basic auth if not needed
 
         return http.build();
     }

@@ -11,6 +11,7 @@ import com.iam.iam_app.entity.JwtToken;
 import com.iam.iam_app.entity.Permission;
 import com.iam.iam_app.entity.Role;
 import com.iam.iam_app.entity.User;
+import com.iam.iam_app.enums.RoleType;
 import com.iam.iam_app.repositories.JWTRepository;
 import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.RoleRepository;
@@ -37,8 +38,12 @@ public class AuthService {
         private PermissionRepository permissionRepository;
 
         public AuthResponse register(CreateUserRequest request) {
-                Role customerRole = roleRepository.findByRole("CUSTOMER")
-                                .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
+                Role customerRole = roleRepository.findByRole(RoleType.CUSTOMER)
+                                .orElseGet(() -> {
+                                        Role newRole = new Role();
+                                        newRole.setRole(RoleType.CUSTOMER);
+                                        return roleRepository.save(newRole);
+                                });
 
                 Permission permission = new Permission();
                 permission.setRead(true);
