@@ -47,8 +47,8 @@ public class AuthService {
 
                 Permission permission = new Permission();
                 permission.setRead(true);
-                permission.setUpdate(false);
-                permission.setDelete(false);
+                permission.setCanUpdate(false);
+                permission.setCanDelete(false);
                 permission.setWrite(false);
                 permissionRepository.save(permission);
 
@@ -80,8 +80,8 @@ public class AuthService {
                                 user.getUserRole().getRole().name(),
                                 user.getPermission().isRead(),
                                 user.getPermission().isWrite(),
-                                user.getPermission().isUpdate(),
-                                user.getPermission().isDelete(),
+                                user.getPermission().isCanUpdate(),
+                                user.getPermission().isCanDelete(),
                                 accessToken,
                                 refreshToken);
         }
@@ -117,8 +117,8 @@ public class AuthService {
                                 user.getUserRole().getRole().name(),
                                 user.getPermission().isRead(),
                                 user.getPermission().isWrite(),
-                                user.getPermission().isUpdate(),
-                                user.getPermission().isDelete(),
+                                user.getPermission().isCanUpdate(),
+                                user.getPermission().isCanDelete(),
                                 accessToken,
                                 refreshToken);
 

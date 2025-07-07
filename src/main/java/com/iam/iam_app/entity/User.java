@@ -57,4 +57,12 @@ public class User extends BaseEntity<Integer> {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "jwt_token_id", referencedColumnName = "id")
     private JwtToken jwtToken;
+
+    public List<String> getRoles() {
+        List<String> roles = new ArrayList<>();
+        if (userRole != null) {
+            roles.add(userRole.getRole().name());
+        }
+        return roles;
+    }
 }
