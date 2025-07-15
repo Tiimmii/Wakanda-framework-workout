@@ -24,11 +24,11 @@ public class Permission extends BaseEntity<Integer> {
 
     @NotNull
     @Column(name = "can_delete", nullable = false)
-    private boolean canDelete;  // Renamed from "delete"
+    private boolean canDelete; 
 
     @NotNull
     @Column(name = "can_update", nullable = false)
-    private boolean canUpdate;  // Renamed from "update"
+    private boolean canUpdate; 
 
     @OneToOne(mappedBy = "permission")
     private User user;

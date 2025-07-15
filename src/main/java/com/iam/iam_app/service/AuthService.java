@@ -1,12 +1,13 @@
 package com.iam.iam_app.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.iam.iam_app.dto.AuthResponse;
 import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
 import com.iam.iam_app.entity.JwtToken;
@@ -18,6 +19,7 @@ import com.iam.iam_app.repositories.JWTRepository;
 import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
+import com.iam.iam_app.response.AuthResponse;
 import com.iam.iam_app.security.UserPrincipal;
 import org.springframework.security.core.Authentication;
 
@@ -99,9 +101,14 @@ public class AuthService {
         }
 
         public AuthResponse login(LoginRequest request) {
-                User user = userRepository
-                                .findByEmailOrUsername(request.getEmailOrUsername(), request.getEmailOrUsername())
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                SecurityContextHolder.getContext().setAuthentication(null);
+                Optional<User> userOpt = userRepository.findByEmail(request.getEmailOrUsername());
+
+                if (userOpt.isEmpty()) {
+                        userOpt = userRepository.findByUsername(request.getEmailOrUsername());
+                }
+
+                User user = userOpt.orElseThrow(() -> new RuntimeException("User not found"));
 
                 if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
                         throw new RuntimeException("Invalid credentials");
@@ -122,9 +129,9 @@ public class AuthService {
 
                 user.setJwtToken(jwtToken);
                 // ✅ Set authenticated principal for BaseEntity to access
-                UserPrincipal userPrincipal = new UserPrincipal(user);
-                Authentication auth = new UsernamePasswordAuthenticationToken(
-                                userPrincipal, null, userPrincipal.getAuthorities());
+                // UserPrincipal userPrincipal = new UserPrincipal(user);
+                // Authentication auth = new UsernamePasswordAuthenticationToken(
+                // userPrincipal, null, userPrincipal.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(null);
                 userRepository.save(user);
 

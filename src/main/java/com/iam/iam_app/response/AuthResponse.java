@@ -1,4 +1,4 @@
-package com.iam.iam_app.dto;
+package com.iam.iam_app.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

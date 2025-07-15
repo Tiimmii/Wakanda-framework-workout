@@ -11,16 +11,16 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.iam.iam_app.service.CustomUserDetailService;
+// import com.iam.iam_app.service.CustomUserDetailService;
 
 @Configuration
 public class SecurityConfig {
-    private CustomUserDetailService customUserDetailService;
+    // private CustomUserDetailService customUserDetailService;
 
-    @Autowired
-    public SecurityConfig(CustomUserDetailService customUserDetailService) {
-        this.customUserDetailService = customUserDetailService;
-    }
+    // @Autowired
+    // public SecurityConfig(CustomUserDetailService customUserDetailService) {
+    //     this.customUserDetailService = customUserDetailService;
+    // }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .authorizeRequests(auth -> auth
                         .antMatchers(
                                 "/auth/register",
+                                "/create-agent-admin",
+                                "/agents",
                                 "/auth/login",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
