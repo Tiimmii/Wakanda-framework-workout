@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
 import com.iam.iam_app.response.AgentResponse;
-import com.iam.iam_app.security.UserPrincipal;
 import com.iam.iam_app.service.AgentService;
 
 @Service

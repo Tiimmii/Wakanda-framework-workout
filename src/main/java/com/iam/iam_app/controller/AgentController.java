@@ -4,9 +4,7 @@ import com.iam.iam_app.dto.CreateAgentRequest;
 import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
 import com.iam.iam_app.response.AgentResponse;
-import com.iam.iam_app.response.AuthResponse;
 import com.iam.iam_app.service.AgentService;
-import com.iam.iam_app.service.AuthService;
 
 import java.util.List;
 

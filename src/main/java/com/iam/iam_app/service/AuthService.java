@@ -21,7 +21,6 @@ import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
 import com.iam.iam_app.response.AuthResponse;
 import com.iam.iam_app.security.UserPrincipal;
-import org.springframework.security.core.Authentication;
 
 @Service
 public class AuthService {
