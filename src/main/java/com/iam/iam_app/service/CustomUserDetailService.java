@@ -5,10 +5,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.wakanda.framework.model.UserPrincipal;
 
 import com.iam.iam_app.entity.User;
 import com.iam.iam_app.repositories.UserRepository;
+import com.iam.iam_app.security.UserPrincipal;
 
 @Service
 public class CustomUserDetailService implements UserDetailsService {

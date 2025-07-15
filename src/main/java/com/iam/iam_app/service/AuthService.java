@@ -1,6 +1,8 @@
 package com.iam.iam_app.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,8 @@ import com.iam.iam_app.repositories.JWTRepository;
 import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
+import com.iam.iam_app.security.UserPrincipal;
+import org.springframework.security.core.Authentication;
 
 @Service
 public class AuthService {
@@ -38,13 +42,14 @@ public class AuthService {
         private PermissionRepository permissionRepository;
 
         public AuthResponse register(CreateUserRequest request) {
+                SecurityContextHolder.getContext().setAuthentication(null);
                 Role customerRole = roleRepository.findByRole(RoleType.CUSTOMER)
                                 .orElseGet(() -> {
                                         Role newRole = new Role();
                                         newRole.setRole(RoleType.CUSTOMER);
                                         return roleRepository.save(newRole);
                                 });
-
+                SecurityContextHolder.clearContext();
                 Permission permission = new Permission();
                 permission.setRead(true);
                 permission.setCanUpdate(false);
@@ -53,13 +58,14 @@ public class AuthService {
                 permissionRepository.save(permission);
 
                 User user = new User();
-
                 user.setUsername(request.getUsername());
                 user.setEmail(request.getEmail());
-                user.setPasswordHash(passwordEncoder.encode(request.getPassword()).toString());
-                user.setAdmin(false); // or based on role
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+                user.setAdmin(false);
                 user.setUserRole(customerRole);
                 user.setPermission(permission);
+
+                userRepository.save(user);
 
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
@@ -70,9 +76,15 @@ public class AuthService {
                                 .user(user)
                                 .build();
                 jwtRepository.save(jwtToken);
-
                 user.setJwtToken(jwtToken);
-                userRepository.save(user);
+
+                // ✅ Set a temporary context for @PrePersist to work
+                UserPrincipal userPrincipal = new UserPrincipal(user);
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userPrincipal,
+                                null, userPrincipal.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(null);
+
+                userRepository.save(user); // <-- triggers @PrePersist
 
                 return new AuthResponse(
                                 user.getUsername(),
@@ -109,6 +121,11 @@ public class AuthService {
                 jwtRepository.save(jwtToken);
 
                 user.setJwtToken(jwtToken);
+                // ✅ Set authenticated principal for BaseEntity to access
+                UserPrincipal userPrincipal = new UserPrincipal(user);
+                Authentication auth = new UsernamePasswordAuthenticationToken(
+                                userPrincipal, null, userPrincipal.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(null);
                 userRepository.save(user);
 
                 return new AuthResponse(
