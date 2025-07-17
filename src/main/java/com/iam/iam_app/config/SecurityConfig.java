@@ -30,8 +30,12 @@ public class SecurityConfig {
                 .authorizeRequests(auth -> auth
                         .antMatchers(
                                 "/auth/register",
-                                "/create-agent-admin",
-                                "/agents",
+                                "/admin/create-user",
+                                "/admin/agents",
+                                "/admin/customers",
+                                "/admin/users",
+                                "/admin/users",
+                                "/customer/resource",
                                 "/auth/login",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",

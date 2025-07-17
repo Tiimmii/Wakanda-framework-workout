@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.iam.iam_app.dto.CreateAgentRequest;
 import com.iam.iam_app.entity.Permission;
@@ -18,6 +19,7 @@ import com.iam.iam_app.repositories.UserRepository;
 import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AdminService;
 
+@Service
 public class AdminServiceImpl implements AdminService {
     @Autowired
     private UserRepository userRepository;
