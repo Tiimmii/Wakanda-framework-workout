@@ -4,16 +4,18 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import com.iam.iam_app.dto.CreateAgentRequest;
 import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AdminService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin")
+@Tag(name = "Admin", description = "Operations related to admin functions in the IAM System")
+@RequestMapping("/api/admin")
 public class AdminController {
     @Autowired
     private AdminService adminService;
@@ -40,5 +42,11 @@ public class AdminController {
     public ResponseEntity<List<AgentResponse>> getAllUsers() {
         List<AgentResponse> users = adminService.getAllUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
+        adminService.deleteUserById(id);
+        return ResponseEntity.ok().body("User deleted successfully");
     }
 }

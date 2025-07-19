@@ -10,8 +10,11 @@ import org.springframework.http.ResponseEntity;
 import com.iam.iam_app.response.ResourceResponse;
 import com.iam.iam_app.service.CustomerService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
-@RequestMapping("/customer")
+@Tag(name = "Customer", description = "Operations related to customer functions in the IAM System")
+@RequestMapping("/api/customer")
 public class CustomerController {
     @Autowired
     private CustomerService customerService;

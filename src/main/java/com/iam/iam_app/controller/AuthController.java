@@ -4,12 +4,16 @@ import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
 import com.iam.iam_app.response.AuthResponse;
 import com.iam.iam_app.service.AuthService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@Tag(name = "Auth", description = "Operations related to Authentication functions in the IAM System")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired

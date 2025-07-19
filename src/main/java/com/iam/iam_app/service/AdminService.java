@@ -10,4 +10,5 @@ public interface AdminService {
     public List<AgentResponse> getAllAgents();
     public List<AgentResponse> getAllCustomers();
     public List<AgentResponse> getAllUsers();
+    void deleteUserById(Integer userId);
 }

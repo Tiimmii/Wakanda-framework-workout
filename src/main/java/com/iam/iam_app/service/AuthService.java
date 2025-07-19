@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.wakanda.framework.exception.BaseException;
 
 import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
@@ -107,10 +108,10 @@ public class AuthService {
                         userOpt = userRepository.findByUsername(request.getEmailOrUsername());
                 }
 
-                User user = userOpt.orElseThrow(() -> new RuntimeException("User not found"));
+                User user = userOpt.orElseThrow(() -> new BaseException(401, "User not found"));
 
                 if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-                        throw new RuntimeException("Invalid credentials");
+                        throw new BaseException(401, "Invalid credentials");
                 }
 
                 jwtRepository.deleteByUser(user);
