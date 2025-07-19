@@ -151,4 +151,70 @@ public class AdminServiceImpl implements AdminService {
 
         userRepository.delete(user);
     }
+
+    @Override
+    public AgentResponse updateUser(Integer userId, CreateAgentRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        }
+
+        if (request.getRoleType() != null) {
+            Role role = roleRepository.findByRole(request.getRoleType())
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setRole(request.getRoleType());
+                        return roleRepository.save(newRole);
+                    });
+            user.setUserRole(role);
+        }
+
+        // Update permissions
+        if (user.getPermission() != null) {
+            if (request.getRoleType() == RoleType.ADMIN) {
+                user.getPermission().setWrite(true);
+                user.getPermission().setRead(true);
+                user.getPermission().setCanUpdate(true);
+                user.getPermission().setCanDelete(true);
+            } else if (request.getRoleType() == RoleType.AGENT) {
+                if (request.isCanWrite())
+                    user.getPermission().setWrite(request.isCanWrite());
+                if (request.isCanUpdate())
+                    user.getPermission().setCanUpdate(request.isCanUpdate());
+                if (request.isCanDelete())
+                    user.getPermission().setCanDelete(request.isCanDelete());
+            } else {
+                user.getPermission().setWrite(true);
+                user.getPermission().setRead(false);
+                user.getPermission().setCanUpdate(false);
+                user.getPermission().setCanDelete(false);
+            }
+
+            permissionRepository.save(user.getPermission());
+        }
+
+       userRepository.save(user);
+
+       return new AgentResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getUserRole().getRole().name(),
+                        user.getPermission() != null && user.getPermission().isRead(),
+                        user.getPermission() != null && user.getPermission().isWrite(),
+                        user.getPermission() != null && user.getPermission().isCanUpdate(),
+                        user.getPermission() != null && user.getPermission().isCanDelete()
+       );
+    }
+
 }

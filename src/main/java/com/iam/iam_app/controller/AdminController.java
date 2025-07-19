@@ -44,6 +44,14 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
+    @PatchMapping("/users/{id}")
+    public ResponseEntity<AgentResponse> patchUser(
+            @PathVariable Integer id,
+            @RequestBody CreateAgentRequest request) {
+        AgentResponse updatedUser = adminService.updateUser(id, request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         adminService.deleteUserById(id);

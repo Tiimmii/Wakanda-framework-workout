@@ -22,7 +22,7 @@ public class CreateAgentRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    private RoleType roleType; // AGENT or ADMIN
+    private RoleType roleType; // AGENT, ADMIN, USER
 
     private boolean canUpdate;
     private boolean canDelete;

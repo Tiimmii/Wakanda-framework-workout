@@ -10,5 +10,6 @@ public interface AdminService {
     public List<AgentResponse> getAllAgents();
     public List<AgentResponse> getAllCustomers();
     public List<AgentResponse> getAllUsers();
+    AgentResponse updateUser(Integer userId, CreateAgentRequest request);
     void deleteUserById(Integer userId);
 }
