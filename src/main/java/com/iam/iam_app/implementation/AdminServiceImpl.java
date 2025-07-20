@@ -203,6 +203,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void deleteUserById(Integer userId) {
+        SecurityContextHolder.getContext().setAuthentication(null);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with ID " + userId + " not found"));
 
@@ -211,6 +212,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AgentResponse updateUser(Integer userId, CreateAgentRequest request) {
+        SecurityContextHolder.getContext().setAuthentication(null);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
@@ -285,6 +287,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void updateUserPermission(UpdatePermissionRequest request) {
+        SecurityContextHolder.getContext().setAuthentication(null);
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new BaseException(404, "User not found"));
 

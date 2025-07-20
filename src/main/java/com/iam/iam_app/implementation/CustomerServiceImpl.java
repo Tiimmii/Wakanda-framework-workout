@@ -23,8 +23,8 @@ public class CustomerServiceImpl implements CustomerService{
                 .map(resource -> new ResourceResponse(
                     resource.getName(),
                     resource.getType(),
-                    resource.getUrl(),
-                    resource.getOwner()
+                    resource.getUrl()
+                    // resource.getOwner()
                 )).collect(Collectors.toList());
     }
 }
