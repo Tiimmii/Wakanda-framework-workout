@@ -29,14 +29,15 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeRequests(auth -> auth
                         .antMatchers(
-                                "/auth/register",
-                                "/admin/create-user",
-                                "/admin/agents",
-                                "/admin/customers",
-                                "/admin/users",
-                                "/admin/users",
-                                "/customer/resource",
-                                "/auth/login",
+                                "/api/admin/create-user",
+                                "/api/admin/agents",
+                                "/api/admin/customers",
+                                "/api/admin/users",
+                                "/api/admin/users",
+                                "/api/customer/resource",
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/admin/users/update-permissions",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")

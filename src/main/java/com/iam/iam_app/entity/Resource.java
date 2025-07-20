@@ -32,7 +32,7 @@ public class Resource extends BaseEntity<Integer> {
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "email", nullable = false, referencedColumnName = "email")
+    @JoinColumn(name = "email", nullable = true, referencedColumnName = "email")
     @NotNull(message = "Owner is required")
     private User owner;
 }
