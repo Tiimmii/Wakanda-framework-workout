@@ -9,13 +9,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.iam.iam_app.dto.CreateAgentRequest;
+import com.iam.iam_app.dto.UserResourcePermissionDto;
 import com.iam.iam_app.entity.Permission;
+import com.iam.iam_app.entity.Resource;
 import com.iam.iam_app.entity.Role;
 import com.iam.iam_app.entity.User;
+import com.iam.iam_app.entity.UserResourcePermission;
 import com.iam.iam_app.enums.RoleType;
 import com.iam.iam_app.repositories.PermissionRepository;
+import com.iam.iam_app.repositories.ResourceRepository;
 import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
+import com.iam.iam_app.repositories.UserResourcePermissionRepository;
 import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AdminService;
 
@@ -33,6 +38,12 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private PermissionRepository permissionRepository;
 
+    @Autowired
+    private ResourceRepository resourceRepository;
+
+    @Autowired
+    private UserResourcePermissionRepository userResourcePermissionRepository;
+
     @Override
     public AgentResponse register(CreateAgentRequest request) {
         SecurityContextHolder.getContext().setAuthentication(null);
@@ -46,102 +57,146 @@ public class AdminServiceImpl implements AdminService {
                     return roleRepository.save(newRole);
                 });
 
-        Permission permission = new Permission();
-        if (roleType == RoleType.ADMIN) {
-            permission.setRead(true);
-            permission.setCanUpdate(true);
-            permission.setCanDelete(true);
-            permission.setWrite(true);
-        } else if (roleType == RoleType.CUSTOMER) {
-            permission.setRead(true);
-            permission.setCanUpdate(false);
-            permission.setCanDelete(false);
-            permission.setWrite(false);
-        } else {
-            // AGENT must provide permission flags
-            permission.setRead(true);
-            permission.setCanUpdate(request.isCanUpdate());
-            permission.setCanDelete(request.isCanDelete());
-            permission.setWrite(request.isCanWrite());
-        }
-
-        permissionRepository.save(permission);
-
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setAdmin(request.getRoleType() == RoleType.ADMIN ? true : false);
         user.setUserRole(role);
-        user.setPermission(permission);
 
         userRepository.save(user);
 
-        // ✅ Set a temporary context for @PrePersist to work
-        // UserPrincipal userPrincipal = new UserPrincipal(user);
-        // UsernamePasswordAuthenticationToken authToken = new
-        // UsernamePasswordAuthenticationToken(userPrincipal,
-        // null, userPrincipal.getAuthorities());
+        List<Resource> resources = resourceRepository.findAll(); // Or filter specific ones
+
+        for (Resource resource : resources) {
+            Permission permission = new Permission();
+
+            if (roleType == RoleType.ADMIN) {
+                permission.setRead(true);
+                permission.setCanUpdate(true);
+                permission.setCanDelete(true);
+                permission.setWrite(true);
+            } else if (roleType == RoleType.CUSTOMER) {
+                permission.setRead(true);
+            } else {
+                permission.setRead(true);
+                permission.setCanUpdate(request.isCanUpdate());
+                permission.setCanDelete(request.isCanDelete());
+                permission.setWrite(request.isCanWrite());
+            }
+
+            permissionRepository.save(permission);
+
+            UserResourcePermission urp = UserResourcePermission.builder()
+                    .user(user)
+                    .resource(resource)
+                    .permission(permission)
+                    .build();
+
+            user.getUserResourcePermissions().add(urp);
+            userResourcePermissionRepository.save(urp);
+        }
+
         SecurityContextHolder.getContext().setAuthentication(null);
 
         userRepository.save(user); // <-- triggers @PrePersist
+
+        List<UserResourcePermissionDto> permissionDtos = user.getUserResourcePermissions()
+                .stream()
+                .map(urp -> new UserResourcePermissionDto(
+                        urp.getResource().getName(),
+                        urp.getResource().getType(),
+                        urp.getResource().getUrl(),
+                        urp.getPermission().isRead(),
+                        urp.getPermission().isWrite(),
+                        urp.getPermission().isCanUpdate(),
+                        urp.getPermission().isCanDelete()))
+                .toList();
 
         return new AgentResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getUserRole().getRole().name(),
-                user.getPermission().isRead(),
-                user.getPermission().isWrite(),
-                user.getPermission().isCanUpdate(),
-                user.getPermission().isCanDelete());
+                permissionDtos);
     }
 
     @Override
     public List<AgentResponse> getAllAgents() {
         List<User> agents = userRepository.findAllByUserRole_Role(RoleType.AGENT);
 
-        return agents.stream().map(user -> new AgentResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getUserRole().getRole().name(),
-                user.getPermission().isRead(),
-                user.getPermission().isWrite(),
-                user.getPermission().isCanUpdate(),
-                user.getPermission().isCanDelete())).collect(Collectors.toList());
+        return agents.stream().map(user -> {
+            List<UserResourcePermissionDto> permissions = user.getUserResourcePermissions()
+                    .stream()
+                    .map(urp -> new UserResourcePermissionDto(
+                            urp.getResource().getName(),
+                            urp.getResource().getType(),
+                            urp.getResource().getUrl(),
+                            urp.getPermission().isRead(),
+                            urp.getPermission().isWrite(),
+                            urp.getPermission().isCanUpdate(),
+                            urp.getPermission().isCanDelete()))
+                    .collect(Collectors.toList());
+
+            return new AgentResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getUserRole().getRole().name(),
+                    permissions);
+        }).collect(Collectors.toList());
     }
 
     @Override
     public List<AgentResponse> getAllCustomers() {
         List<User> customers = userRepository.findAllByUserRole_Role(RoleType.CUSTOMER);
 
-        return customers.stream().map(user -> new AgentResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getUserRole().getRole().name(),
-                user.getPermission().isRead(),
-                user.getPermission().isWrite(),
-                user.getPermission().isCanUpdate(),
-                user.getPermission().isCanDelete())).collect(Collectors.toList());
+        return customers.stream().map(user -> {
+            List<UserResourcePermissionDto> permissions = user.getUserResourcePermissions()
+                    .stream()
+                    .map(urp -> new UserResourcePermissionDto(
+                            urp.getResource().getName(),
+                            urp.getResource().getType(),
+                            urp.getResource().getUrl(),
+                            urp.getPermission().isRead(),
+                            urp.getPermission().isWrite(),
+                            urp.getPermission().isCanUpdate(),
+                            urp.getPermission().isCanDelete()))
+                    .collect(Collectors.toList());
+
+            return new AgentResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getUserRole().getRole().name(),
+                    permissions);
+        }).collect(Collectors.toList());
     }
 
     @Override
     public List<AgentResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
 
-        return users.stream()
-                .map(user -> new AgentResponse(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getUserRole().getRole().name(),
-                        user.getPermission() != null && user.getPermission().isRead(),
-                        user.getPermission() != null && user.getPermission().isWrite(),
-                        user.getPermission() != null && user.getPermission().isCanUpdate(),
-                        user.getPermission() != null && user.getPermission().isCanDelete()))
-                .collect(Collectors.toList());
+        return users.stream().map(user -> {
+            List<UserResourcePermissionDto> permissions = user.getUserResourcePermissions()
+                    .stream()
+                    .map(urp -> new UserResourcePermissionDto(
+                            urp.getResource().getName(),
+                            urp.getResource().getType(),
+                            urp.getResource().getUrl(),
+                            urp.getPermission().isRead(),
+                            urp.getPermission().isWrite(),
+                            urp.getPermission().isCanUpdate(),
+                            urp.getPermission().isCanDelete()))
+                    .collect(Collectors.toList());
+
+            return new AgentResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getUserRole().getRole().name(),
+                    permissions);
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -179,42 +234,51 @@ public class AdminServiceImpl implements AdminService {
             user.setUserRole(role);
         }
 
-        // Update permissions
-        if (user.getPermission() != null) {
+        // Update each UserResourcePermission
+        for (UserResourcePermission urp : user.getUserResourcePermissions()) {
+            Permission permission = urp.getPermission();
+
             if (request.getRoleType() == RoleType.ADMIN) {
-                user.getPermission().setWrite(true);
-                user.getPermission().setRead(true);
-                user.getPermission().setCanUpdate(true);
-                user.getPermission().setCanDelete(true);
+                permission.setWrite(true);
+                permission.setRead(true);
+                permission.setCanUpdate(true);
+                permission.setCanDelete(true);
             } else if (request.getRoleType() == RoleType.AGENT) {
-                if (request.isCanWrite())
-                    user.getPermission().setWrite(request.isCanWrite());
-                if (request.isCanUpdate())
-                    user.getPermission().setCanUpdate(request.isCanUpdate());
-                if (request.isCanDelete())
-                    user.getPermission().setCanDelete(request.isCanDelete());
+                permission.setRead(true);
+                permission.setWrite(request.isCanWrite());
+                permission.setCanUpdate(request.isCanUpdate());
+                permission.setCanDelete(request.isCanDelete());
             } else {
-                user.getPermission().setWrite(true);
-                user.getPermission().setRead(false);
-                user.getPermission().setCanUpdate(false);
-                user.getPermission().setCanDelete(false);
+                // CUSTOMER
+                permission.setRead(true);
+                permission.setWrite(false);
+                permission.setCanUpdate(false);
+                permission.setCanDelete(false);
             }
 
-            permissionRepository.save(user.getPermission());
+            permissionRepository.save(permission);
         }
 
-       userRepository.save(user);
+        userRepository.save(user);
 
-       return new AgentResponse(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getUserRole().getRole().name(),
-                        user.getPermission() != null && user.getPermission().isRead(),
-                        user.getPermission() != null && user.getPermission().isWrite(),
-                        user.getPermission() != null && user.getPermission().isCanUpdate(),
-                        user.getPermission() != null && user.getPermission().isCanDelete()
-       );
+        List<UserResourcePermissionDto> permissionDtos = user.getUserResourcePermissions()
+                .stream()
+                .map(urp -> new UserResourcePermissionDto(
+                        urp.getResource().getName(),
+                        urp.getResource().getType(),
+                        urp.getResource().getUrl(),
+                        urp.getPermission().isRead(),
+                        urp.getPermission().isWrite(),
+                        urp.getPermission().isCanUpdate(),
+                        urp.getPermission().isCanDelete()))
+                .collect(Collectors.toList());
+
+        return new AgentResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getUserRole().getRole().name(),
+                permissionDtos);
     }
 
 }

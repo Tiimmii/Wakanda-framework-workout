@@ -11,10 +11,6 @@ public class AuthResponse {
     private String username;
     private String email;
     private String role;
-    private boolean canRead;
-    private boolean canWrite;
-    private boolean canUpdate;
-    private boolean canDelete;
     private String accessToken;
     private String refreshToken;
 }

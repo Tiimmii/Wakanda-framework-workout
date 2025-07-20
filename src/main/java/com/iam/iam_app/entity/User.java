@@ -46,9 +46,9 @@ public class User extends BaseEntity<Integer> {
     @JoinColumn(name = "role", nullable = false, referencedColumnName = "role")
     private Role userRole;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "permission_id", referencedColumnName = "id")
-    private Permission permission;
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserResourcePermission> userResourcePermissions = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -57,5 +57,5 @@ public class User extends BaseEntity<Integer> {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "jwt_token_id", referencedColumnName = "id")
     private JwtToken jwtToken;
-    
+
 }

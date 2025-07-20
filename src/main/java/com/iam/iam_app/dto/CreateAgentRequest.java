@@ -4,9 +4,10 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import com.iam.iam_app.enums.RoleType;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,9 +23,11 @@ public class CreateAgentRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    private RoleType roleType; // AGENT, ADMIN, USER
+    private RoleType roleType; // AGENT, ADMIN, CUSTOMER
 
+    // List of resource permissions for this user
+    private boolean canRead;
+    private boolean canWrite;
     private boolean canUpdate;
     private boolean canDelete;
-    private boolean canWrite;
 }

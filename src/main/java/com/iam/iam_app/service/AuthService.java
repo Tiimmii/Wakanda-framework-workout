@@ -1,5 +1,6 @@
 package com.iam.iam_app.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +14,17 @@ import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
 import com.iam.iam_app.entity.JwtToken;
 import com.iam.iam_app.entity.Permission;
+import com.iam.iam_app.entity.Resource;
 import com.iam.iam_app.entity.Role;
 import com.iam.iam_app.entity.User;
+import com.iam.iam_app.entity.UserResourcePermission;
 import com.iam.iam_app.enums.RoleType;
 import com.iam.iam_app.repositories.JWTRepository;
 import com.iam.iam_app.repositories.PermissionRepository;
+import com.iam.iam_app.repositories.ResourceRepository;
 import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
+import com.iam.iam_app.repositories.UserResourcePermissionRepository;
 import com.iam.iam_app.response.AuthResponse;
 import com.iam.iam_app.security.UserPrincipal;
 
@@ -43,6 +48,12 @@ public class AuthService {
         @Autowired
         private PermissionRepository permissionRepository;
 
+        @Autowired
+        private ResourceRepository resourceRepository;
+
+        @Autowired
+        private UserResourcePermissionRepository userResourcePermissionRepository;
+
         public AuthResponse register(CreateUserRequest request) {
                 SecurityContextHolder.getContext().setAuthentication(null);
                 Role customerRole = roleRepository.findByRole(RoleType.CUSTOMER)
@@ -51,13 +62,6 @@ public class AuthService {
                                         newRole.setRole(RoleType.CUSTOMER);
                                         return roleRepository.save(newRole);
                                 });
-                SecurityContextHolder.clearContext();
-                Permission permission = new Permission();
-                permission.setRead(true);
-                permission.setCanUpdate(false);
-                permission.setCanDelete(false);
-                permission.setWrite(false);
-                permissionRepository.save(permission);
 
                 User user = new User();
                 user.setUsername(request.getUsername());
@@ -65,9 +69,28 @@ public class AuthService {
                 user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
                 user.setAdmin(false);
                 user.setUserRole(customerRole);
-                user.setPermission(permission);
 
                 userRepository.save(user);
+
+                List<Resource> allResources = resourceRepository.findAll();
+
+                for (Resource resource : allResources) {
+                        Permission permission = new Permission();
+                        permission.setRead(true);
+                        permission.setCanUpdate(false);
+                        permission.setCanDelete(false);
+                        permission.setWrite(false);
+                        permissionRepository.save(permission);
+
+                        UserResourcePermission urp = new UserResourcePermission();
+                        urp.setUser(user);
+                        urp.setResource(resource);
+                        urp.setPermission(permission);
+
+                        user.getUserResourcePermissions().add(urp);
+                        userResourcePermissionRepository.save(urp);
+
+                }
 
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
@@ -80,10 +103,10 @@ public class AuthService {
                 jwtRepository.save(jwtToken);
                 user.setJwtToken(jwtToken);
 
-                // ✅ Set a temporary context for @PrePersist to work
-                UserPrincipal userPrincipal = new UserPrincipal(user);
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userPrincipal,
-                                null, userPrincipal.getAuthorities());
+                // // ✅ Set a temporary context for @PrePersist to work
+                // UserPrincipal userPrincipal = new UserPrincipal(user);
+                // UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userPrincipal,
+                //                 null, userPrincipal.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(null);
 
                 userRepository.save(user); // <-- triggers @PrePersist
@@ -92,10 +115,6 @@ public class AuthService {
                                 user.getUsername(),
                                 user.getEmail(),
                                 user.getUserRole().getRole().name(),
-                                user.getPermission().isRead(),
-                                user.getPermission().isWrite(),
-                                user.getPermission().isCanUpdate(),
-                                user.getPermission().isCanDelete(),
                                 accessToken,
                                 refreshToken);
         }
@@ -139,10 +158,6 @@ public class AuthService {
                                 user.getUsername(),
                                 user.getEmail(),
                                 user.getUserRole().getRole().name(),
-                                user.getPermission().isRead(),
-                                user.getPermission().isWrite(),
-                                user.getPermission().isCanUpdate(),
-                                user.getPermission().isCanDelete(),
                                 accessToken,
                                 refreshToken);
 

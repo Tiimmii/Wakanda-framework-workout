@@ -29,7 +29,4 @@ public class Permission extends BaseEntity<Integer> {
     @NotNull
     @Column(name = "can_update", nullable = false)
     private boolean canUpdate; 
-
-    @OneToOne(mappedBy = "permission")
-    private User user;
 }
