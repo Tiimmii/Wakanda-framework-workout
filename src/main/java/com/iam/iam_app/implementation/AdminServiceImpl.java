@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.wakanda.framework.exception.BaseException;
 
 import com.iam.iam_app.dto.CreateAgentRequest;
+import com.iam.iam_app.dto.UpdatePermissionRequest;
 import com.iam.iam_app.dto.UserResourcePermissionDto;
 import com.iam.iam_app.entity.Permission;
 import com.iam.iam_app.entity.Resource;
@@ -279,6 +281,27 @@ public class AdminServiceImpl implements AdminService {
                 user.getEmail(),
                 user.getUserRole().getRole().name(),
                 permissionDtos);
+    }
+
+    @Override
+    public void updateUserPermission(UpdatePermissionRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new BaseException(404, "User not found"));
+
+        Resource resource = resourceRepository.findById(request.getResourceId())
+                .orElseThrow(() -> new BaseException(404, "Resource not found"));
+
+        UserResourcePermission urp = userResourcePermissionRepository
+                .findByUserAndResource(user, resource)
+                .orElseThrow(() -> new BaseException(404, "Permission mapping not found for user and resource"));
+
+        Permission permission = urp.getPermission();
+        permission.setRead(request.isCanRead());
+        permission.setWrite(request.isCanWrite());
+        permission.setCanUpdate(request.isCanUpdate());
+        permission.setCanDelete(request.isCanDelete());
+
+        permissionRepository.save(permission);
     }
 
 }

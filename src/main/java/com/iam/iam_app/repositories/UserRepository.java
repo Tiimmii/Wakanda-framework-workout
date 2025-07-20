@@ -11,6 +11,7 @@ import com.iam.iam_app.enums.RoleType;
 @Repository
 public interface UserRepository extends BaseRepository<User, Integer> {
     Optional<User> findByEmail(String email);
+    Optional<User> findById(Integer id);
     Optional<User> findByUsername(String username);
     List<User> findAllByUserRole_Role(RoleType roleType);
 }

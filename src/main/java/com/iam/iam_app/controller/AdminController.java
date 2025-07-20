@@ -2,10 +2,13 @@ package com.iam.iam_app.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import com.iam.iam_app.dto.CreateAgentRequest;
+import com.iam.iam_app.dto.UpdatePermissionRequest;
 import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AdminService;
 
@@ -50,6 +53,13 @@ public class AdminController {
             @RequestBody CreateAgentRequest request) {
         AgentResponse updatedUser = adminService.updateUser(id, request);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    
+    @PutMapping("/users/update-permissions")
+    public ResponseEntity<?> updatePermission(@RequestBody @Valid UpdatePermissionRequest request) {
+        adminService.updateUserPermission(request);
+        return ResponseEntity.ok("Permissions updated successfully");
     }
 
     @DeleteMapping("/users/{id}")
