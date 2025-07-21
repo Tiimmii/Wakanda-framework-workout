@@ -7,12 +7,8 @@ import org.wakanda.framework.exception.BaseException;
 import com.iam.iam_app.dto.CreateResourceRequest;
 import com.iam.iam_app.entity.Resource;
 import com.iam.iam_app.entity.User;
-import com.iam.iam_app.enums.RoleType;
-import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.ResourceRepository;
-import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
-import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AgentService;
 
 @Service
