@@ -7,8 +7,6 @@ import com.iam.iam_app.enums.RoleType;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 public class CreateAgentRequest {

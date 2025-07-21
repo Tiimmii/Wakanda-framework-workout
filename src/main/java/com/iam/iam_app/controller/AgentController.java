@@ -1,15 +1,9 @@
 package com.iam.iam_app.controller;
 
-import com.iam.iam_app.dto.CreateAgentRequest;
 import com.iam.iam_app.dto.CreateResourceRequest;
-import com.iam.iam_app.dto.CreateUserRequest;
-import com.iam.iam_app.dto.LoginRequest;
-import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AgentService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.util.List;
 
 import javax.validation.Valid;
 
