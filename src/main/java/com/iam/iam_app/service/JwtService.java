@@ -72,4 +72,13 @@ public class JwtService {
 
         return false;
     }
+
+    public String extractUserId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(jwtSecret)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject(); // user ID is stored in `sub` claim
+    }
 }

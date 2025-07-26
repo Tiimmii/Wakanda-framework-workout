@@ -30,7 +30,6 @@ public class AgentServiceImpl implements AgentService {
                 .url(request.getUrl())
                 .owner(owner)
                 .build();
-        SecurityContextHolder.getContext().setAuthentication(null);
         resourceRepository.save(resource);
     }
 

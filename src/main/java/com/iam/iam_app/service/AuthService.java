@@ -5,11 +5,14 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.wakanda.framework.exception.BaseException;
+import org.wakanda.framework.model.UserPrincipal;
 
+import com.iam.iam_app.bridge.WakandaUserAdapter;
 import com.iam.iam_app.dto.CreateUserRequest;
 import com.iam.iam_app.dto.LoginRequest;
 import com.iam.iam_app.entity.JwtToken;
@@ -26,7 +29,6 @@ import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
 import com.iam.iam_app.repositories.UserResourcePermissionRepository;
 import com.iam.iam_app.response.AuthResponse;
-import com.iam.iam_app.security.UserPrincipal;
 
 @Service
 public class AuthService {
@@ -56,10 +58,18 @@ public class AuthService {
 
         public AuthResponse register(CreateUserRequest request) {
                 SecurityContextHolder.getContext().setAuthentication(null);
+                List<User> users = userRepository.findAll();
                 Role customerRole = roleRepository.findByRole(RoleType.CUSTOMER)
                                 .orElseGet(() -> {
                                         Role newRole = new Role();
                                         newRole.setRole(RoleType.CUSTOMER);
+                                        return roleRepository.save(newRole);
+                                });
+
+                Role adminRole = roleRepository.findByRole(RoleType.ADMIN)
+                                .orElseGet(() -> {
+                                        Role newRole = new Role();
+                                        newRole.setRole(RoleType.ADMIN);
                                         return roleRepository.save(newRole);
                                 });
 
@@ -68,7 +78,7 @@ public class AuthService {
                 user.setEmail(request.getEmail());
                 user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
                 user.setAdmin(false);
-                user.setUserRole(customerRole);
+                user.setUserRole(users.isEmpty() ? adminRole : customerRole);
 
                 userRepository.save(user);
 
@@ -103,12 +113,15 @@ public class AuthService {
                 jwtRepository.save(jwtToken);
                 user.setJwtToken(jwtToken);
 
-                // // ✅ Set a temporary context for @PrePersist to work
-                // UserPrincipal userPrincipal = new UserPrincipal(user);
-                // UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userPrincipal,
-                //                 null, userPrincipal.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(null);
+                // Create a temporary UserPrincipal
+                UserPrincipal tempPrincipal = new UserPrincipal(
+                        new WakandaUserAdapter(user)
+                );
 
+                // Set temporary authentication
+                Authentication auth = new UsernamePasswordAuthenticationToken(
+                                tempPrincipal, null, tempPrincipal.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 userRepository.save(user); // <-- triggers @PrePersist
 
                 return new AuthResponse(
@@ -147,11 +160,14 @@ public class AuthService {
                 jwtRepository.save(jwtToken);
 
                 user.setJwtToken(jwtToken);
-                // ✅ Set authenticated principal for BaseEntity to access
-                // UserPrincipal userPrincipal = new UserPrincipal(user);
-                // Authentication auth = new UsernamePasswordAuthenticationToken(
-                // userPrincipal, null, userPrincipal.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(null);
+                UserPrincipal tempPrincipal = new UserPrincipal(
+                        new WakandaUserAdapter(user)
+                );
+
+                // Set temporary authentication
+                Authentication auth = new UsernamePasswordAuthenticationToken(
+                                tempPrincipal, null, tempPrincipal.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 userRepository.save(user);
 
                 return new AuthResponse(

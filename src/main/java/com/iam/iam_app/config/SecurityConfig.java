@@ -3,40 +3,51 @@ package com.iam.iam_app.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.iam.iam_app.security.JwtAuthenticationFilter;
+
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 
 // import com.iam.iam_app.service.CustomUserDetailService;
 
 @Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
     // private CustomUserDetailService customUserDetailService;
 
     // @Autowired
     // public SecurityConfig(CustomUserDetailService customUserDetailService) {
-    //     this.customUserDetailService = customUserDetailService;
+    // this.customUserDetailService = customUserDetailService;
     // }
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors().and()
                 .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests(auth -> auth
                         .antMatchers(
-                                "/api/admin/create-user",
-                                "/api/admin/agents",
-                                "/api/admin/customers",
-                                "/api/admin/users",
-                                "/api/admin/users",
-                                "/api/customer/resource",
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/admin/users/update-permissions",
-                                "/api/agent/create-resource",
+                                "/api/auth/**",
+                                "/api/admin/**",
+                                "/api/customer/**",
+                                "/api/agent/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")
@@ -44,6 +55,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

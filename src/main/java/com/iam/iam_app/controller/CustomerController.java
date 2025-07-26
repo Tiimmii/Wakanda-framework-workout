@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.iam.iam_app.response.ResourceResponse;
 import com.iam.iam_app.service.CustomerService;
@@ -19,6 +20,7 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/resource")
     public ResponseEntity<List<ResourceResponse>> getAllResource(){
         List<ResourceResponse> resources = customerService.getAllResource();
