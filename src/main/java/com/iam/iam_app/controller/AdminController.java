@@ -63,7 +63,7 @@ public class AdminController {
     }
 
     @PreAuthorize("isAuthenticated() and hasAuthority('ADMIN')")
-    @PutMapping("/users/update-permissions")
+    @PatchMapping("/users/update-permissions")
     public ResponseEntity<?> updatePermission(@RequestBody @Valid UpdatePermissionRequest request) {
         adminService.updateUserPermission(request);
         return ResponseEntity.ok("Permissions updated successfully");

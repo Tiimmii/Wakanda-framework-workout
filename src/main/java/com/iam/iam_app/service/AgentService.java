@@ -8,5 +8,6 @@ import com.iam.iam_app.response.AgentResponse;
 
 public interface AgentService {
     void createResource(CreateResourceRequest request);
-    public void deleteResourceById(Integer resourceId); 
+    public void deleteResourceById(Integer resourceId);
+    public void updateResource(Integer resourceId, CreateResourceRequest request); 
 }
