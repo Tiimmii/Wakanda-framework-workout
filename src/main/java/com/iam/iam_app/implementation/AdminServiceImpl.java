@@ -1,14 +1,21 @@
 package com.iam.iam_app.implementation;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.wakanda.framework.exception.BaseException;
+import org.wakanda.framework.model.UserPrincipal;
 
+import com.iam.iam_app.bridge.WakandaUserAdapter;
 import com.iam.iam_app.dto.CreateAgentRequest;
+import com.iam.iam_app.dto.UpdateAgentRequest;
 import com.iam.iam_app.dto.UpdatePermissionRequest;
 import com.iam.iam_app.dto.UserResourcePermissionDto;
 import com.iam.iam_app.entity.Permission;
@@ -201,11 +208,20 @@ public class AdminServiceImpl implements AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with ID " + userId + " not found"));
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
+            throw new BaseException(401, "User not authenticated");
+        }
+        UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+        if(principal.getUser().getUserId().equals(userId.toString())){
+            throw new BaseException(405, "You cannot delete yourself");
+        }
+        
         userRepository.delete(user);
     }
 
     @Override
-    public AgentResponse updateUser(Integer userId, CreateAgentRequest request) {
+    public AgentResponse updateUser(Integer userId, UpdateAgentRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
@@ -232,29 +248,29 @@ public class AdminServiceImpl implements AdminService {
         }
 
         // Update each UserResourcePermission
-        for (UserResourcePermission urp : user.getUserResourcePermissions()) {
-            Permission permission = urp.getPermission();
+        // for (UserResourcePermission urp : user.getUserResourcePermissions()) {
+        // Permission permission = urp.getPermission();
 
-            if (request.getRoleType() == RoleType.ADMIN) {
-                permission.setWrite(true);
-                permission.setRead(true);
-                permission.setCanUpdate(true);
-                permission.setCanDelete(true);
-            } else if (request.getRoleType() == RoleType.AGENT) {
-                permission.setRead(true);
-                permission.setWrite(request.isCanWrite());
-                permission.setCanUpdate(request.isCanUpdate());
-                permission.setCanDelete(request.isCanDelete());
-            } else {
-                // CUSTOMER
-                permission.setRead(true);
-                permission.setWrite(false);
-                permission.setCanUpdate(false);
-                permission.setCanDelete(false);
-            }
+        // if (request.getRoleType() == RoleType.ADMIN) {
+        // permission.setWrite(true);
+        // permission.setRead(true);
+        // permission.setCanUpdate(true);
+        // permission.setCanDelete(true);
+        // } else if (request.getRoleType() == RoleType.AGENT) {
+        // permission.setRead(true);
+        // permission.setWrite(request.isCanWrite());
+        // permission.setCanUpdate(request.isCanUpdate());
+        // permission.setCanDelete(request.isCanDelete());
+        // } else {
+        // // CUSTOMER
+        // permission.setRead(true);
+        // permission.setWrite(false);
+        // permission.setCanUpdate(false);
+        // permission.setCanDelete(false);
+        // }
 
-            permissionRepository.save(permission);
-        }
+        // permissionRepository.save(permission);
+        // }
 
         userRepository.save(user);
 
@@ -286,17 +302,36 @@ public class AdminServiceImpl implements AdminService {
         Resource resource = resourceRepository.findById(request.getResourceId())
                 .orElseThrow(() -> new BaseException(404, "Resource not found"));
 
-        UserResourcePermission urp = userResourcePermissionRepository
-                .findByUserAndResource(user, resource)
-                .orElseThrow(() -> new BaseException(404, "Permission mapping not found for user and resource"));
+        Optional<UserResourcePermission> optionalUrp = userResourcePermissionRepository.findByUserAndResource(user,
+                resource);
 
-        Permission permission = urp.getPermission();
-        permission.setRead(request.isCanRead());
-        permission.setWrite(request.isCanWrite());
-        permission.setCanUpdate(request.isCanUpdate());
-        permission.setCanDelete(request.isCanDelete());
+        Permission permission;
 
-        permissionRepository.save(permission);
+        if (optionalUrp.isEmpty()) {
+            permission = new Permission();
+            permission.setRead(request.isCanRead());
+            permission.setWrite(request.isCanWrite());
+            permission.setCanUpdate(request.isCanUpdate());
+            permission.setCanDelete(request.isCanDelete());
+
+            permission = permissionRepository.save(permission);
+
+            UserResourcePermission newUrp = new UserResourcePermission();
+            newUrp.setUser(user);
+            newUrp.setResource(resource);
+            newUrp.setPermission(permission);
+
+            userResourcePermissionRepository.save(newUrp);
+        } else {
+            UserResourcePermission urp = optionalUrp.get();
+            permission = urp.getPermission();
+
+            permission.setRead(request.isCanRead());
+            permission.setWrite(request.isCanWrite());
+            permission.setCanUpdate(request.isCanUpdate());
+            permission.setCanDelete(request.isCanDelete());
+
+            permissionRepository.save(permission);
+        }
     }
-
 }

@@ -22,12 +22,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-    // private CustomUserDetailService customUserDetailService;
-
-    // @Autowired
-    // public SecurityConfig(CustomUserDetailService customUserDetailService) {
-    // this.customUserDetailService = customUserDetailService;
-    // }
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 

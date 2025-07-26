@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.iam.iam_app.dto.CreateAgentRequest;
+import com.iam.iam_app.dto.UpdateAgentRequest;
 import com.iam.iam_app.dto.UpdatePermissionRequest;
 import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.service.AdminService;
@@ -56,7 +57,7 @@ public class AdminController {
     @PatchMapping("/users/{id}")
     public ResponseEntity<AgentResponse> patchUser(
             @PathVariable Integer id,
-            @RequestBody CreateAgentRequest request) {
+            @RequestBody UpdateAgentRequest request) {
         AgentResponse updatedUser = adminService.updateUser(id, request);
         return ResponseEntity.ok(updatedUser);
     }
