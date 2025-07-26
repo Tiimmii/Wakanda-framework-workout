@@ -1,4 +1,4 @@
-package com.iam.iam_app.implementation;
+package com.iam.iam_app.service.implementation;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,13 +23,14 @@ import com.iam.iam_app.entity.Resource;
 import com.iam.iam_app.entity.Role;
 import com.iam.iam_app.entity.User;
 import com.iam.iam_app.entity.UserResourcePermission;
-import com.iam.iam_app.enums.RoleType;
+import com.iam.iam_app.entity.enums.RoleType;
 import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.ResourceRepository;
 import com.iam.iam_app.repositories.RoleRepository;
 import com.iam.iam_app.repositories.UserRepository;
 import com.iam.iam_app.repositories.UserResourcePermissionRepository;
 import com.iam.iam_app.response.AgentResponse;
+import com.iam.iam_app.response.ResourceResponse;
 import com.iam.iam_app.service.AdminService;
 
 @Service
@@ -213,10 +214,10 @@ public class AdminServiceImpl implements AdminService {
             throw new BaseException(401, "User not authenticated");
         }
         UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
-        if(principal.getUser().getUserId().equals(userId.toString())){
+        if (principal.getUser().getUserId().equals(userId.toString())) {
             throw new BaseException(405, "You cannot delete yourself");
         }
-        
+
         userRepository.delete(user);
     }
 
@@ -333,5 +334,18 @@ public class AdminServiceImpl implements AdminService {
 
             permissionRepository.save(permission);
         }
+    }
+
+    @Override
+    public List<ResourceResponse> getAllResource() {
+        List<Resource> resources = resourceRepository.findAll();
+
+        return resources.stream()
+                .map(resource -> new ResourceResponse(
+                        resource.getName(),
+                        resource.getType(),
+                        resource.getUrl(),
+                        resource.getOwner().getUsername().toString()))
+                .collect(Collectors.toList());
     }
 }

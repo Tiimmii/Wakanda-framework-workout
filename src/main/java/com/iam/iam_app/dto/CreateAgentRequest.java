@@ -3,7 +3,8 @@ package com.iam.iam_app.dto;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-import com.iam.iam_app.enums.RoleType;
+import com.iam.iam_app.entity.enums.RoleType;
+
 import lombok.Getter;
 import lombok.Setter;
 

@@ -6,5 +6,5 @@ import com.iam.iam_app.response.AgentResponse;
 import com.iam.iam_app.response.ResourceResponse;
 
 public interface CustomerService {
-    public List<ResourceResponse> getAllResource();
+    public ResourceResponse getResource(Integer id);
 }

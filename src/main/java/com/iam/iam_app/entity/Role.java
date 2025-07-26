@@ -2,12 +2,12 @@ package com.iam.iam_app.entity;
 
 import java.util.List;
 
-import com.iam.iam_app.enums.RoleType;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.wakanda.framework.entity.BaseEntity;
+
+import com.iam.iam_app.entity.enums.RoleType;
 
 import lombok.Getter;
 import lombok.Setter;

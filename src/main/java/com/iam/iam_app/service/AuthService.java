@@ -3,12 +3,14 @@ package com.iam.iam_app.service;
 import java.util.List;
 import java.util.Optional;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.wakanda.framework.exception.BaseException;
 import org.wakanda.framework.model.UserPrincipal;
 
@@ -21,7 +23,7 @@ import com.iam.iam_app.entity.Resource;
 import com.iam.iam_app.entity.Role;
 import com.iam.iam_app.entity.User;
 import com.iam.iam_app.entity.UserResourcePermission;
-import com.iam.iam_app.enums.RoleType;
+import com.iam.iam_app.entity.enums.RoleType;
 import com.iam.iam_app.repositories.JWTRepository;
 import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.ResourceRepository;
@@ -138,6 +140,7 @@ public class AuthService {
                                 refreshToken);
         }
 
+        @Transactional
         public AuthResponse login(LoginRequest request) {
                 SecurityContextHolder.getContext().setAuthentication(null);
                 Optional<User> userOpt = userRepository.findByEmail(request.getEmailOrUsername());

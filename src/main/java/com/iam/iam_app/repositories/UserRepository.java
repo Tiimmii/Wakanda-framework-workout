@@ -6,7 +6,7 @@ import org.wakanda.framework.repository.BaseRepository;
 import java.util.List;
 import java.util.Optional;
 import com.iam.iam_app.entity.User;
-import com.iam.iam_app.enums.RoleType;
+import com.iam.iam_app.entity.enums.RoleType;
 
 @Repository
 public interface UserRepository extends BaseRepository<User, Integer> {

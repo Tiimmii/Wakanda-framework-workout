@@ -13,5 +13,5 @@ public class ResourceResponse {
     private String name;
     private String type;
     private String url;
-    private User owner;
+    private String owner;
 }

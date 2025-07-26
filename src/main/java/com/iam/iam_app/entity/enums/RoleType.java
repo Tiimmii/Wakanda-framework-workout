@@ -1,4 +1,4 @@
-package com.iam.iam_app.enums;
+package com.iam.iam_app.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

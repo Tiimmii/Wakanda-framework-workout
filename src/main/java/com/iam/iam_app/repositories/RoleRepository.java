@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import org.wakanda.framework.repository.BaseRepository;
 
 import com.iam.iam_app.entity.Role;
-import com.iam.iam_app.enums.RoleType;
+import com.iam.iam_app.entity.enums.RoleType;
 
 @Repository
 public interface RoleRepository extends BaseRepository<Role, Integer> {

@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .antMatchers(
                                 "/api/auth/**",
                                 "/api/admin/**",
+                                "/api/**",
                                 "/api/customer/**",
                                 "/api/agent/**",
                                 "/v3/api-docs/**",

@@ -1,4 +1,7 @@
-package com.iam.iam_app.implementation;
+package com.iam.iam_app.service.implementation;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -17,6 +20,8 @@ import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.ResourceRepository;
 import com.iam.iam_app.repositories.UserRepository;
 import com.iam.iam_app.repositories.UserResourcePermissionRepository;
+import com.iam.iam_app.response.AgentResponse;
+import com.iam.iam_app.response.ResourceResponse;
 import com.iam.iam_app.service.AgentService;
 
 @Service
@@ -128,6 +133,21 @@ public class AgentServiceImpl implements AgentService {
                         resource.setType(request.getType());
                 }
                 resourceRepository.save(resource);
+        }
+
+        @Override
+        public List<ResourceResponse> listResource() {
+                UserPrincipal principal = new AuthHandler().getAuthenticatedUser();
+                User user = userRepository.findById(Integer.parseInt(principal.getUser().getUserId()))
+                                .orElseThrow(() -> new BaseException(404, "Authenticated user not found"));
+                List<Resource> resources = resourceRepository.findByOwner(user);
+                return resources.stream()
+                                .map(resource -> new ResourceResponse(
+                                                resource.getName(),
+                                                resource.getType(),
+                                                resource.getUrl(),
+                                                resource.getOwner().getUsername().toString()))
+                                .collect(Collectors.toList());
         }
 
 }

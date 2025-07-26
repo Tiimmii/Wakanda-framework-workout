@@ -12,6 +12,7 @@ import com.iam.iam_app.dto.CreateAgentRequest;
 import com.iam.iam_app.dto.UpdateAgentRequest;
 import com.iam.iam_app.dto.UpdatePermissionRequest;
 import com.iam.iam_app.response.AgentResponse;
+import com.iam.iam_app.response.ResourceResponse;
 import com.iam.iam_app.service.AdminService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -74,5 +75,12 @@ public class AdminController {
     public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         adminService.deleteUserById(id);
         return ResponseEntity.ok().body("User deleted successfully");
+    }
+
+    @PreAuthorize("isAuthenticated() and hasAuthority('ADMIN')")
+    @GetMapping("/resources")
+    public ResponseEntity<List<ResourceResponse>> getAllResource(){
+        List<ResourceResponse> resources = adminService.getAllResource();
+        return ResponseEntity.ok(resources); 
     }
 }

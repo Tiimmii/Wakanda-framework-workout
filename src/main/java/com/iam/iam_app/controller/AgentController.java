@@ -1,9 +1,12 @@
 package com.iam.iam_app.controller;
 
 import com.iam.iam_app.dto.CreateResourceRequest;
+import com.iam.iam_app.response.ResourceResponse;
 import com.iam.iam_app.service.AgentService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.List;
 
 import javax.validation.Valid;
 
@@ -21,6 +24,13 @@ public class AgentController {
     private AgentService agentService;
 
     @PreAuthorize("isAuthenticated() and (hasAuthority('AGENT') or hasAuthority('ADMIN'))")
+    @GetMapping("/resources/me")
+    public ResponseEntity<List<ResourceResponse>> listResource(){
+        List<ResourceResponse> resources = agentService.listResource();
+        return ResponseEntity.ok(resources);
+    } 
+
+    @PreAuthorize("isAuthenticated() and (hasAuthority('AGENT') or hasAuthority('ADMIN'))")
     @PostMapping("/create-resource")
     public ResponseEntity<String> createResource(@RequestBody @Valid CreateResourceRequest request) {
         agentService.createResource(request);
@@ -35,10 +45,9 @@ public class AgentController {
     }
 
     @PreAuthorize("isAuthenticated() and (hasAuthority('AGENT') or hasAuthority('ADMIN'))")
-    @PutMapping("/update-resource/{id}")
+    @PatchMapping("/update-resource/{id}")
     public ResponseEntity<String> updateResource(@PathVariable Integer id, @RequestBody @Valid CreateResourceRequest request) {
         agentService.updateResource(id, request);
         return ResponseEntity.ok("Resource Updated successfully");
     }
-
 }

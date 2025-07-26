@@ -14,16 +14,16 @@ import com.iam.iam_app.service.CustomerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@Tag(name = "Customer", description = "Operations related to customer functions in the IAM System")
-@RequestMapping("/api/customer")
+@Tag(name = "Resources", description = "Operations related to normal users functions in the IAM System")
+@RequestMapping("/api")
 public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/resource")
-    public ResponseEntity<List<ResourceResponse>> getAllResource(){
-        List<ResourceResponse> resources = customerService.getAllResource();
+    @GetMapping("/resource/{id}")
+    public ResponseEntity<ResourceResponse> getResource(@PathVariable Integer id){
+        ResourceResponse resources = customerService.getResource(id);
         return ResponseEntity.ok(resources); 
     }
 }
