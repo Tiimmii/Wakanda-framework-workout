@@ -77,7 +77,7 @@ public class AuthService {
                 user.setUsername(request.getUsername());
                 user.setEmail(request.getEmail());
                 user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-                user.setAdmin(false);
+                user.setAdmin(users.isEmpty() ? true : false);
                 user.setUserRole(users.isEmpty() ? adminRole : customerRole);
 
                 userRepository.save(user);
@@ -86,10 +86,17 @@ public class AuthService {
 
                 for (Resource resource : allResources) {
                         Permission permission = new Permission();
-                        permission.setRead(true);
-                        permission.setCanUpdate(false);
-                        permission.setCanDelete(false);
-                        permission.setWrite(false);
+                        if (users.isEmpty()) {
+                                permission.setRead(true);
+                                permission.setCanUpdate(true);
+                                permission.setCanDelete(true);
+                                permission.setWrite(true);
+                        } else {
+                                permission.setRead(false);
+                                permission.setCanUpdate(false);
+                                permission.setCanDelete(false);
+                                permission.setWrite(false);
+                        }
                         permissionRepository.save(permission);
 
                         UserResourcePermission urp = new UserResourcePermission();
@@ -115,8 +122,7 @@ public class AuthService {
 
                 // Create a temporary UserPrincipal
                 UserPrincipal tempPrincipal = new UserPrincipal(
-                        new WakandaUserAdapter(user)
-                );
+                                new WakandaUserAdapter(user));
 
                 // Set temporary authentication
                 Authentication auth = new UsernamePasswordAuthenticationToken(
@@ -161,8 +167,7 @@ public class AuthService {
 
                 user.setJwtToken(jwtToken);
                 UserPrincipal tempPrincipal = new UserPrincipal(
-                        new WakandaUserAdapter(user)
-                );
+                                new WakandaUserAdapter(user));
 
                 // Set temporary authentication
                 Authentication auth = new UsernamePasswordAuthenticationToken(

@@ -1,14 +1,22 @@
 package com.iam.iam_app.implementation;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.wakanda.framework.exception.BaseException;
+import org.wakanda.framework.model.UserPrincipal;
+
+import com.iam.iam_app.bridge.AuthHandler;
 import com.iam.iam_app.dto.CreateResourceRequest;
+import com.iam.iam_app.entity.Permission;
 import com.iam.iam_app.entity.Resource;
 import com.iam.iam_app.entity.User;
+import com.iam.iam_app.entity.UserResourcePermission;
+import com.iam.iam_app.repositories.PermissionRepository;
 import com.iam.iam_app.repositories.ResourceRepository;
 import com.iam.iam_app.repositories.UserRepository;
+import com.iam.iam_app.repositories.UserResourcePermissionRepository;
 import com.iam.iam_app.service.AgentService;
 
 @Service
@@ -19,10 +27,17 @@ public class AgentServiceImpl implements AgentService {
     @Autowired
     private ResourceRepository resourceRepository;
 
+    @Autowired
+    private PermissionRepository permissionRepository;
+
+    @Autowired
+    private UserResourcePermissionRepository userResourcePermissionRepository;
+
     @Override
     public void createResource(CreateResourceRequest request) {
-        User owner = userRepository.findByEmail(request.getOwnerEmail())
-                .orElseThrow(() -> new BaseException(404, "User with email " + request.getOwnerEmail() + " not found"));
+        UserPrincipal principal = new AuthHandler().getAuthenticatedUser();
+        User owner = userRepository.findById(Integer.parseInt(principal.getUser().getUserId()))
+                .orElseThrow(() -> new BaseException(404, "Authenticated user not found"));
 
         Resource resource = Resource.builder()
                 .name(request.getName())
@@ -31,6 +46,33 @@ public class AgentServiceImpl implements AgentService {
                 .owner(owner)
                 .build();
         resourceRepository.save(resource);
+
+        Permission permission = new Permission();
+        permission.setRead(true);
+        permission.setWrite(true);
+        permission.setCanUpdate(true);
+        permission.setCanDelete(true);
+        permissionRepository.save(permission);
+
+        UserResourcePermission newUrp = new UserResourcePermission();
+        newUrp.setUser(owner);
+        newUrp.setResource(resource);
+        newUrp.setPermission(permission);
+
+        userResourcePermissionRepository.save(newUrp);
+
+    }
+
+    @Override
+    public void deleteResourceById(Integer resourceId) {
+        UserPrincipal principal = new AuthHandler().getAuthenticatedUser();
+        User user = userRepository.findById(Integer.parseInt(principal.getUser().getUserId()))
+                .orElseThrow(() -> new BaseException(404, "Authenticated user not found"));
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new BaseException(404, "Resource not found"));
+        UserResourcePermission urp = userResourcePermissionRepository.findByUserAndResource(user, resource)
+                        .orElseThrow(() -> new BaseException(404, "You are not permitted to delete this resource"));
+        if(urp)
     }
 
 }

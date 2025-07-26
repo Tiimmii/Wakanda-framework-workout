@@ -19,7 +19,4 @@ public class CreateResourceRequest {
 
     @NotBlank(message = "Resource URL is required")
     private String url;
-
-    @NotNull(message = "Owner email is required")
-    private String ownerEmail;
 }
